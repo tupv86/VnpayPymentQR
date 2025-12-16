@@ -1,0 +1,8 @@
+﻿@model VnpayResponseModel
+
+<h2>Kết quả thanh toán</h2>
+<p>Số tiền: @Model.vnp_Amount</p>
+<p>Mã ngân hàng: @Model.vnp_BankCode</p>
+<p>Mã giao dịch VNPAY: @Model.vnp_TransactionNo</p>
+<p>Mã phản hồi: @Model.vnp_ResponseCode (@(Model.vnp_ResponseCode == "00" ? "Thành công" : "Thất bại"))</p>
+<!-- Hiển thị thêm các field khác -->

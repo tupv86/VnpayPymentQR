@@ -1,0 +1,123 @@
+﻿@{
+    ViewData["Title"] = "Thanh Toán VNPAY";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <!-- Card chính -->
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <!-- Header với logo VNPAY (tùy chọn) -->
+                <div class="card-header bg-gradient bg-primary text-white text-center py-4">
+                    <h2 class="mb-0 fw-bold">
+                        <i class="fas fa-credit-card me-2"></i>
+                        Thanh Toán Với VNPAY
+                    </h2>
+                    <p class="mb-0 mt-2 opacity-90">Giao dịch an toàn • Môi trường thử nghiệm (Sandbox)</p>
+                </div>
+
+                <!-- Body form -->
+                <div class="card-body p-4 p-md-5">
+                    <form asp-action="CreatePayment" method="post" class="needs-validation" novalidate>
+                        <!-- Số tiền -->
+                        <div class="mb-4">
+                            <label for="amount" class="form-label fw-semibold text-dark">
+                                <i class="fas fa-money-bill-wave me-1"></i> Số tiền thanh toán (VND)
+                            </label>
+                            <input type="number"
+                                   id="amount"
+                                   name="amount"
+                                   class="form-control form-control-lg text-end fw-bold"
+                                   value="30000000"
+                                   min="1000"
+                                   step="1000"
+                                   placeholder="0"
+                                   required
+                                   autocomplete="off" />
+                            <div class="form-text mt-2 text-muted">
+                                Ví dụ: 30000000 → 30.000.000 ₫
+                            </div>
+                            <div class="invalid-feedback">
+                                Vui lòng nhập số tiền hợp lệ (tối thiểu 1.000 VND).
+                            </div>
+                        </div>
+
+                        <!-- Thông tin đơn hàng (khuyến khích thêm) -->
+                        <div class="mb-4">
+                            <label for="orderInfo" class="form-label fw-semibold text-dark">
+                                <i class="fas fa-info-circle me-1"></i> Mô tả giao dịch
+                            </label>
+                            <input type="text"
+                                   id="orderInfo"
+                                   name="orderInfo"
+                                   class="form-control"
+                                   value="Thanh toán đơn hàng thuốc"
+                                   placeholder="Ví dụ: Thanh toán tiền thuốc tháng 12"
+                                   required />
+                            <div class="invalid-feedback">
+                                Vui lòng nhập mô tả giao dịch.
+                            </div>
+                        </div>
+
+                        <!-- Mã khuyến mãi -->
+                        <div class="mb-5">
+                            <label for="promoCode" class="form-label fw-semibold text-dark">
+                                <i class="fas fa-tag me-1"></i> Mã khuyến mãi (tùy chọn)
+                            </label>
+                            <input type="text"
+                                   id="promoCode"
+                                   name="promoCode"
+                                   class="form-control"
+                                   placeholder="Nhập mã giảm giá nếu có"
+                                   autocomplete="off" />
+                            <div class="form-text text-muted">
+                                Để trống nếu không sử dụng mã khuyến mãi.
+                            </div>
+                        </div>
+
+                        <!-- Nút thanh toán -->
+                        <div class="d-grid gap-3">
+                            <button type="submit" class="btn btn-danger btn-lg fw-bold py-3 rounded-pill shadow-sm">
+                                <i class="fas fa-arrow-right me-2"></i>
+                                Tiếp Tục Thanh Toán VNPAY
+                            </button>
+
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-lg rounded-pill">
+                                <i class="fas fa-list me-2"></i> Quay lại danh sách giao dịch
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Footer card -->
+                <div class="card-footer bg-light text-center py-4">
+                    <small class="text-muted">
+                        <i class="fas fa-lock me-1"></i>
+                        Giao dịch được mã hóa và bảo mật bởi VNPAY
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome cho icon đẹp -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<!-- Script validate form Bootstrap -->
+<script>
+    // Bootstrap form validation
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+</script>

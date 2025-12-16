@@ -1,0 +1,126 @@
+﻿<table class="table">
+    <thead>
+        <tr>
+            <th>Mã đơn</th>
+            <th>Số tiền</th>
+            <th>Thông tin</th>
+            <th>Ngày tạo</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var order in ViewBag.Orders)
+        {
+            <tr>
+                <td>@order.OrderId</td>
+                <td>@order.Amount.ToString("N0") VND</td>
+                <td>@order.OrderInfo</td>
+                <td>@order.CreateDate</td>
+                <td>
+                    <span class="badge @(order.Status == "Success" ? "bg-success" : order.Status == "Failed" ? "bg-danger" : "bg-warning")">
+                        @order.Status
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-info btn-sm" onclick="queryDR('@order.OrderId')">QueryDR</button>
+                    @if (order.Status == "Success")
+                    {
+                        <button class="btn btn-warning btn-sm" onclick="showRefundModal('@order.OrderId', @order.Amount)">
+                            Refund
+                        </button>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<!-- Modal Refund -->
+<div class="modal fade" id="refundModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Hoàn tiền giao dịch</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Mã đơn:</strong> <span id="modalOrderId"></span></p>
+                <p><strong>Số tiền gốc:</strong> <span id="modalOriginalAmount"></span> VND</p>
+
+                <div class="mb-3">
+                    <label class="form-label">Số tiền hoàn (VND)</label>
+                    <input type="number" id="modalRefundAmount" class="form-control" min="1000" step="1000" />
+                    <small class="text-muted">Nhập số tiền muốn hoàn (tối đa bằng số tiền gốc)</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-warning" onclick="confirmRefund()">Xác nhận hoàn tiền</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function queryDR(orderId) {
+        fetch('/Home/QueryDR', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderId: orderId })
+        }).then(r => r.json()).then(data => alert(JSON.stringify(data)));
+    }
+
+        let currentOrderId = '';
+    let maxAmount = 0;
+
+    function showRefundModal(orderId, originalAmount) {
+        currentOrderId = orderId;
+        maxAmount = originalAmount;
+
+        document.getElementById('modalOrderId').textContent = orderId;
+        document.getElementById('modalOriginalAmount').textContent = originalAmount.toLocaleString();
+        document.getElementById('modalRefundAmount').value = originalAmount; // Mặc định hoàn toàn bộ
+        document.getElementById('modalRefundAmount').max = originalAmount;
+
+        new bootstrap.Modal(document.getElementById('refundModal')).show();
+    }
+
+    function confirmRefund() {
+        let refundAmount = parseFloat(document.getElementById('modalRefundAmount').value);
+
+        if (isNaN(refundAmount) || refundAmount <= 0) {
+            alert("Vui lòng nhập số tiền hợp lệ");
+            return;
+        }
+
+        if (refundAmount > maxAmount) {
+            alert("Số tiền hoàn không được lớn hơn số tiền gốc");
+            return;
+        }
+
+        if (!confirm(`Xác nhận hoàn ${refundAmount.toLocaleString()} VND cho đơn hàng ${currentOrderId}?`)) {
+            return;
+        }
+
+        fetch('/Home/Refund', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                OrderId: currentOrderId,
+                RefundAmount: refundAmount
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            alert(data.message || (data.success ? "Hoàn tiền thành công!" : "Lỗi hoàn tiền"));
+            if (data.success) {
+                location.reload(); // Reload để cập nhật trạng thái
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Lỗi kết nối");
+        });
+
+        bootstrap.Modal.getInstance(document.getElementById('refundModal')).hide();
+    }
+</script>
