@@ -50,7 +50,7 @@ namespace VnpayPymentQR.Controllers
             {
                 OrderId = orderId,
                 Amount = amt,
-                OrderInfo= "Test thanh toan tien Thuoc",
+                OrderInfo = "Test thanh toan tien Thuoc",
                 CreateDate = DateTime.Now.ToString("yyyyMMddHHmmss"),
                 ExpireDate = DateTime.Now.AddMinutes(15).ToString("yyyyMMddHHmmss"),
                 PromoCode = vnp_PromoCode,
@@ -59,21 +59,21 @@ namespace VnpayPymentQR.Controllers
             _orderService.AddOrder(order);
 
             var vnpParams = new SortedDictionary<string, string>
-        {
-            { "vnp_Version", "2.1.0" },
-            { "vnp_Command", "pay" },
-            { "vnp_TmnCode", _vnpayConfig.TmnCode },
-            { "vnp_Amount", (long.Parse(amount) * 100).ToString() },
-            { "vnp_CurrCode", "VND" },
-            { "vnp_TxnRef", orderId }, // Sửa lỗi gốc
-            { "vnp_OrderInfo", "Test thanh toan tien Thuoc" },
-            { "vnp_OrderType", "oldmc" },
-            { "vnp_Locale", "vn" },
-            { "vnp_ReturnUrl", _vnpayConfig.ReturnUrl },
-            { "vnp_IpAddr", HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1" },
-            { "vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss") },
-            { "vnp_ExpireDate", expireDate }
-        };
+            {
+                { "vnp_Version", "2.1.0" },
+                { "vnp_Command", "pay" },
+                { "vnp_TmnCode", _vnpayConfig.TmnCode },
+                { "vnp_Amount", (long.Parse(amount) * 100).ToString() },
+                { "vnp_CurrCode", "VND" },
+                { "vnp_TxnRef", orderId }, // Sửa lỗi gốc
+                { "vnp_OrderInfo", "Test thanh toan tien Thuoc" },
+                { "vnp_OrderType", "oldmc" },
+                { "vnp_Locale", "vn" },
+                { "vnp_ReturnUrl", _vnpayConfig.ReturnUrl },
+                { "vnp_IpAddr", HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1" },
+                { "vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss") },
+                { "vnp_ExpireDate", expireDate }
+            };
 
             if (!string.IsNullOrEmpty(vnp_PromoCode))
             {
@@ -175,14 +175,14 @@ namespace VnpayPymentQR.Controllers
             var ipAddr = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
 
             // Thứ tự fields chính xác theo tài liệu VNPAY cho querydr
-            var data = $"{requestId}|2.1.0|querydr|{_vnpayConfig.TmnCode}|{order.OrderId}|{order.CreateDate}|{createDate}|{ipAddr}|{order.OrderInfo}";
-
+            //var data = $"{requestId}|2.1.0|querydr|{_vnpayConfig.TmnCode}|{order.OrderId}|{order.CreateDate}|{createDate}|{ipAddr}|{order.OrderInfo}";
+            var data = buildQueryDrData("2.1.3", requestId, "querydr", _vnpayConfig.TmnCode, order, createDate, ipAddr);
             var secureHash = HmacSHA512(_vnpayConfig.HashSecret, data);
 
             var payload = new
             {
                 vnp_RequestId = requestId,
-                vnp_Version = "2.1.0",
+                vnp_Version = "2.1.3",
                 vnp_Command = "querydr",
                 vnp_TmnCode = _vnpayConfig.TmnCode,
                 vnp_TxnRef = order.OrderId,
@@ -216,10 +216,7 @@ namespace VnpayPymentQR.Controllers
                 var promotionCode = json["vnp_PromotionCode"]?.ToString() ?? "";
                 var promotionAmount = json["vnp_PromotionAmount"]?.ToString() ?? "";
 
-                var verifyData = $"{json["vnp_ResponseId"]}|{json["vnp_Command"]}|{json["vnp_ResponseCode"]}|{json["vnp_Message"]}|" +
-                                 $"{json["vnp_TmnCode"]}|{json["vnp_TxnRef"]}|{json["vnp_Amount"]}|{json["vnp_BankCode"]}|" +
-                                 $"{json["vnp_PayDate"]}|{json["vnp_TransactionNo"]}|{json["vnp_TransactionType"]}|" +
-                                 $"{json["vnp_TransactionStatus"]}|{json["vnp_OrderInfo"]}|{promotionCode}|{promotionAmount}";
+                var verifyData = BuildVerifyData(json);
 
                 var calculatedHash = HmacSHA512(_vnpayConfig.HashSecret, verifyData);
 
@@ -346,5 +343,110 @@ namespace VnpayPymentQR.Controllers
             }
             return hash.ToString();
         }
+
+
+        private string buildQueryDrData(
+        string version,
+        string requestId,
+        string command,
+        string tmnCode,
+        Order order,
+        string createDate,
+        string ipAddr
+)
+        {
+            if ("2.1.3".Equals(version))
+            {
+                // Version 2.1.3: CÓ vnp_TransactionNo
+                return String.Join("|",
+                        requestId,
+                        version,
+                        command,
+                        tmnCode,
+                        order.OrderId,           // vnp_TxnRef
+                        order.TransactionNo,     // vnp_TransactionNo
+                        order.CreateDate,        // vnp_TransactionDate
+                        createDate,
+                        ipAddr,
+                        order.OrderInfo
+                );
+            }
+
+            // Default: version 2.1.0 (KHÔNG có vnp_TransactionNo)
+            return String.Join("|",
+                    requestId,
+                    version,
+                    command,
+                    tmnCode,
+                    order.OrderId,               // vnp_TxnRef
+                    order.CreateDate,            // vnp_TransactionDate
+                    createDate,
+                    ipAddr,
+                    order.OrderInfo
+            );
+        }
+
+
+        private string BuildVerifyData(JObject json)
+        {
+            // Lấy version, mặc định 2.1.0
+            string version = json.Value<string>("vnp_Version")?.Trim() ?? "2.1.3";
+
+            // Helper: lấy string, nếu null / missing => ""
+            string V(string key) => json.Value<string>(key) ?? "";
+
+            if (version == "2.1.3")
+            {
+                // Version 2.1.3
+                return string.Join("|",
+                    V("vnp_ResponseId"),
+                    V("vnp_Command"),
+                    V("vnp_ResponseCode"),
+                    V("vnp_Message"),
+                    V("vnp_TmnCode"),
+                    V("vnp_TxnRef"),
+                    V("vnp_Trace"),
+                    V("vnp_Amount"),
+                    V("vnp_FeeAmount"),
+                    V("vnp_CurrCode"),
+                    V("vnp_BankCode"),
+                    V("vnp_CardNumber"),
+                    V("vnp_CardHolder"),
+                    V("vnp_MobileNumber"),
+                    V("vnp_PayDate"),
+                    V("vnp_TransactionNo"),
+                    V("vnp_TransactionType"),
+                    V("vnp_TransactionStatus"),
+                    V("vnp_OrderInfo"),
+                    V("vnp_PromotionCode"),
+                    V("vnp_PromotionAmount"),
+                    V("vnp_CardType"),
+                    V("vnp_PayType"),
+                    V("vnp_AccountType"),
+                    V("vnp_Issuer"),
+                    V("vnp_ApprovalCode")
+                );
+            }
+
+            // Default: version 2.1.0
+            return string.Join("|",
+                V("vnp_ResponseId"),
+                V("vnp_Command"),
+                V("vnp_ResponseCode"),
+                V("vnp_Message"),
+                V("vnp_TmnCode"),
+                V("vnp_TxnRef"),
+                V("vnp_Amount"),
+                V("vnp_BankCode"),
+                V("vnp_PayDate"),
+                V("vnp_TransactionNo"),
+                V("vnp_TransactionType"),
+                V("vnp_TransactionStatus"),
+                V("vnp_OrderInfo"),
+                V("vnp_PromotionCode"),
+                V("vnp_PromotionAmount")
+            );
+        }
     }
+
 }
