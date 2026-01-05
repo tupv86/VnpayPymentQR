@@ -194,8 +194,17 @@ namespace VnpayPymentQR.Controllers
             };
 
             using var client = new HttpClient();
+            // Header chung
+            client.DefaultRequestHeaders.Clear();
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
+            client.DefaultRequestHeaders.Add("User-Agent", "VNPAY-CSharp-Client");
             var jsonPayload = JsonConvert.SerializeObject(payload);
-            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+            var content = new StringContent(
+                jsonPayload,
+                Encoding.UTF8,
+                "application/json"
+            );
+
 
             try
             {
@@ -299,8 +308,15 @@ namespace VnpayPymentQR.Controllers
             };
 
             using var client = new HttpClient();
+            client.DefaultRequestHeaders.Clear();
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
+            client.DefaultRequestHeaders.Add("User-Agent", "VNPAY-CSharp-Client");
             var jsonPayload = JsonConvert.SerializeObject(payload);
-            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+            var content = new StringContent(
+                jsonPayload,
+                Encoding.UTF8,
+                "application/json"
+            );
 
             try
             {

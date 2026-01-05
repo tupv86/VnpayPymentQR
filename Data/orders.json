@@ -63,5 +63,31 @@
     "Status": "Success",
     "ResponseCode": "00",
     "PromoCode": ""
+  },
+  {
+    "OrderId": "20260105164843",
+    "Amount": 30000000,
+    "OrderInfo": "Test thanh toan tien Thuoc",
+    "CreateDate": "20260105164843",
+    "ExpireDate": "20260105170343",
+    "TransactionNo": null,
+    "BankCode": null,
+    "PayDate": null,
+    "Status": "Pending",
+    "ResponseCode": null,
+    "PromoCode": ""
+  },
+  {
+    "OrderId": "20260105164845",
+    "Amount": 30000000,
+    "OrderInfo": "Test thanh toan tien Thuoc",
+    "CreateDate": "20260105164845",
+    "ExpireDate": "20260105170345",
+    "TransactionNo": "15381910",
+    "BankCode": "NCB",
+    "PayDate": "20260105164920",
+    "Status": "Success",
+    "ResponseCode": "00",
+    "PromoCode": ""
   }
 ]
