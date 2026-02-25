@@ -40,19 +40,20 @@ namespace VnpayPymentQR.Controllers
         [HttpPost]
         public IActionResult CreatePayment(string amount, string vnp_PromoCode = "")
         {
-            var orderId = DateTime.Now.ToString("yyyyMMddHHmmss");
-            var expireDate = DateTime.Now.AddMinutes(15).ToString("yyyyMMddHHmmss");
-
+           
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+            var orderId = vietnamTime.ToString("yyyyMMddHHmmss");
+            var createDate = vietnamTime.ToString("yyyyMMddHHmmss");
+            var expireDate = vietnamTime.AddMinutes(15).ToString("yyyyMMddHHmmss");
             decimal amt = decimal.Parse(amount);
-
-
             var order = new Order
             {
                 OrderId = orderId,
                 Amount = amt,
                 OrderInfo = "Test thanh toan tien Thuoc",
-                CreateDate = DateTime.Now.ToString("yyyyMMddHHmmss"),
-                ExpireDate = DateTime.Now.AddMinutes(15).ToString("yyyyMMddHHmmss"),
+                CreateDate = createDate,
+                ExpireDate = expireDate,
                 PromoCode = vnp_PromoCode,
                 Status = "Pending"
             };
@@ -71,7 +72,7 @@ namespace VnpayPymentQR.Controllers
                 { "vnp_Locale", "vn" },
                 { "vnp_ReturnUrl", _vnpayConfig.ReturnUrl },
                 { "vnp_IpAddr", HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1" },
-                { "vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss") },
+                { "vnp_CreateDate", createDate },
                 { "vnp_ExpireDate", expireDate }
             };
 
@@ -171,7 +172,9 @@ namespace VnpayPymentQR.Controllers
             var url = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction"; // Production: bỏ sandbox.
 
             var requestId = Guid.NewGuid().ToString("N").Substring(0, 20); // Random string
-            var createDate = DateTime.Now.ToString("yyyyMMddHHmmss");
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+            var createDate = vietnamTime.ToString("yyyyMMddHHmmss");
             var ipAddr = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
 
             // Thứ tự fields chính xác theo tài liệu VNPAY cho querydr
@@ -279,7 +282,9 @@ namespace VnpayPymentQR.Controllers
             var url = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
 
             var requestId = Guid.NewGuid().ToString("N").Substring(0, 20);
-            var createDate = DateTime.Now.ToString("yyyyMMddHHmmss");
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+            var createDate = vietnamTime.ToString("yyyyMMddHHmmss");
             var ipAddr = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
 
             // Thứ tự fields cho refund (khác querydr một chút)
