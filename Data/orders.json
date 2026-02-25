@@ -86,6 +86,32 @@
     "TransactionNo": "15381910",
     "BankCode": "NCB",
     "PayDate": "20260105164920",
+    "Status": "Refunded",
+    "ResponseCode": "00",
+    "PromoCode": ""
+  },
+  {
+    "OrderId": "20260119133330",
+    "Amount": 30000000,
+    "OrderInfo": "Test thanh toan tien Thuoc",
+    "CreateDate": "20260119133330",
+    "ExpireDate": "20260119134830",
+    "TransactionNo": "15401803",
+    "BankCode": "NCB",
+    "PayDate": "20260119133401",
+    "Status": "Success",
+    "ResponseCode": "00",
+    "PromoCode": ""
+  },
+  {
+    "OrderId": "20260202142608",
+    "Amount": 30000000,
+    "OrderInfo": "Test thanh toan tien Thuoc",
+    "CreateDate": "20260202142608",
+    "ExpireDate": "20260202144108",
+    "TransactionNo": "15418508",
+    "BankCode": "NCB",
+    "PayDate": "20260202142644",
     "Status": "Success",
     "ResponseCode": "00",
     "PromoCode": ""
