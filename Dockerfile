@@ -13,4 +13,4 @@ COPY --from=build /app/publish .
 ENV ASPNETCORE_URLS=http://+:$PORT
 EXPOSE 8080
 
-ENTRYPOINT ["dotnet", "YourApp.dll"]
+ENTRYPOINT ["dotnet", "VnpayPymentQR.dll"]
